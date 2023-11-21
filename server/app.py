@@ -1,8 +1,8 @@
-from flask import request, make_response, session, jsonify, abort
-from werkzeug.exceptions import HTTPException
-from config import app, db
-from models import User, UserMedia, Media
-import requests
+# from flask import request, make_response, session, jsonify, abort
+# from werkzeug.exceptions import HTTPException
+# from config import app, db
+# from models import User, UserMedia, Media
+# import requests
 
 from flask import Flask, request, jsonify, make_response
 from models import db, User, Bill, Summary, Vote
@@ -13,12 +13,12 @@ import jwt
 import datetime
 import requests
 
-app = Flask(__name__)
+# app = Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///yourdatabase.db'
-app.config['SECRET_KEY'] = 'your_secret_key'
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///yourdatabase.db'
+# app.config['SECRET_KEY'] = 'your_secret_key'
 
-db.init_app(app)
+# db.init_app(app)
 
 def token_required(f):
     @wraps(f)
@@ -54,7 +54,7 @@ def user_profile(user_id):
     user_data = {'username': user.username, 'firstname': user.firstname, 'lastname': user.lastname, 'email': user.email}
     return jsonify({'user': user_data})
 
-@app.route('/user/<int:user_id>', nmethods=['PATCH'])
+@app.route('/user/<int:user_id>', methods=['PATCH'])
 @token_required
 def update_user_profile(current_user, user_id):
     if current_user.id != user_id:
@@ -71,7 +71,7 @@ def update_user_profile(current_user, user_id):
     user.password = data.get('password', user.password)
     
     db.session.commit()
-    return jsonify('message': 'User profile updated')
+    return jsonify({'message': 'User profile updated'})
 
 @app.route('/login', methods=['POST'])
 def login_user():
@@ -120,7 +120,17 @@ def revoke_delegate(current_user):
 @app.route('/bill', methods=['GET'])
 def list_bills():
     bills = Bill.query.all()
-    bill_data = [{'id': bill.id, 'title': bill.title, 'summary': bill.summary, 'content': bill.content} for bill in bills]
+    bill_data = []
+    for bill in bills:
+        bill_dict = {'id': bill.id,
+            'title': bill.title,
+            'summary': bill.summary[0].content if bill.summary else None,
+            'content': bill.content
+            }
+        bill_data.append(bill_dict)
+        print(bill_dict)
+
+    # [{'id': bill.id, 'title': bill.title, 'summary': bill.summary, 'content': bill.content} for bill in bills]
     return jsonify({'bills': bill_data})
 
 @app.route('/bill', methods=['POST'])
@@ -131,7 +141,6 @@ def create_bill(current_user):
     #call OpenAI summary
     db.session.add(new_bill)
     db.session.commit()
-
     return jsonify({'message': 'New bill created!'})
 
 @app.route('/bill/<int:bill_id>', methods=['GET'])
@@ -141,7 +150,7 @@ def get_bill(bill_id):
     if not bill:
         return jsonify({'message': 'No bill found!'})
     
-    bill_data = {'title': bill.title, 'summary': bill.summary, 'content': bill.content, 'uploader': bill.uploader.username}
+    bill_data = {'title': bill.title, 'summary': bill.summary, 'content': bill.content, 'uploaded_by': bill.uploaded_by.username}
     return jsonify({'bill': bill_data})
 
 @app.route('/bill/<int:bill_id>', methods=['PATCH'])
@@ -163,7 +172,7 @@ def delete_bill(current_user, bill_id):
     bill = Bill.query.get_or_404(bill_id)
     if bill.uploaded_by != current_user.id:
         return jsonify({'message': 'Permission denied'}), 403
-    
+        
     db.session.delete(bill)
     db.session.commit()
     return jsonify({'message': 'Bill deleted successfully'})
@@ -198,4 +207,4 @@ def vote_on_bill(current_user):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(port=5555, debug=True)

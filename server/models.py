@@ -8,13 +8,13 @@ class User(db.Model, SerializerMixin):
     __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String, unique=True, nullable=False)
-    firstname = db.Column(db.String, nullable=False)
+    username = db.Column(db.String, unique=True, nullable=True)
+    firstname = db.Column(db.String, nullable=True)
     middlename = db.Column(db.String, nullable=True)
-    lastname = db.Column(db.String, nullable=False)
+    lastname = db.Column(db.String, nullable=True)
     suffix = db.Column(db.String, nullable=True)
-    password = db.Column(db.String, nullable=False)
-    email = db.Column(db.String, unique=True, nullable=False)
+    password = db.Column(db.String, nullable=True)
+    email = db.Column(db.String, unique=True, nullable=True)
     ssn = db.Column(db.String, unique=True, nullable=True)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
@@ -51,7 +51,7 @@ class Bill(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String, unique=True, nullable=False)
     content = db.Column(db.String, unique=True, nullable=False)
-    summary_id = db.Column(db.Integer, db.ForeignKey('summaries.id'), nullable=True)
+    # summary_id = db.Column(db.Integer, db.ForeignKey('summaries.id'), nullable=True)
     uploaded_by = db.Column(db.String, db.ForeignKey('users.id'), nullable=False)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
@@ -76,6 +76,8 @@ class Summary(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.String, nullable=False)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    bill_id = db.Column(db.Integer, db.ForeignKey('bills.id'), nullable=True)
+    # bill = db.relationship('Bill', backref='summary', lazy=True)
 
     def formatted_summary(self):
         #summary logic

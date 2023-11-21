@@ -25,41 +25,55 @@
 // export default App;
 
 
-import React from 'react';
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import BillList from './BillList';
+import Home from './Home';
+import Header from './Header';
 
-import Header from './components/Header';
-import Footer from './components/Footer';
-import Home from './pages/Home';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import BillList from './pages/BillList';
-import BillDetail from './pages/BillDetail';
-import UserProfile from './pages/UserProfile';
-import CreateBill from './pages/CreateBill';
-import EditProfile from './pages/EditProfile';
+// import Footer from './components/Footer';
 
-const App = () => {
+// import Login from './pages/Login';
+// import Register from './pages/Register';
+
+// import BillDetail from './pages/BillDetail';
+// import UserProfile from './pages/UserProfile';
+// import CreateBill from './pages/CreateBill';
+// import EditProfile from './pages/EditProfile';
+
+function App() {
+  console.log("Hello")
+  const [bills,setBills]=useState([])
+  const [user,setUser]=useState(null)
+
+  useEffect(() => {
+    fetch("/bill")
+      .then((res) => res.json())
+      .then((data) => setBills(data.bills));
+  },[])
+
+
     return (
+      <div className="App">
         <Router>
-            <div className="App">
                 <Header />
                 <main>
-                    <Switch>
-                        <Route exact path="/" component={Home} />
-                        <Route path="/login" component={Login} />
-                        <Route path="/register" component={Register} />
-                        <Route path="/bills" component={BillList} />
-                        <Route path="/bill/:id" component={BillDetail} />
-                        <Route path="/user/:id" component={UserProfile} />
-                        <Route path="/create-bill" component={CreateBill} />
-                        <Route path="/edit-profile" component={EditProfile} />
+                    <Routes>
+                        <Route exact path="/" element={<Home />} />
+                        {/* <Route path="/login" element={<Login />} /> */}
+                        {/* <Route path="/register" element={<Register />} /> */}
+                        <Route exact path="/BillList" element={<BillList bills={bills} />}/>
+                        {/* <Route path="/bill/:id" element={<BillDetail />} />
+                        <Route path="/user/:id" element={<UserProfile />} />
+                        <Route path="/create-bill" element={<CreateBill />} />
+                        <Route path="/edit-profile" element={<EditProfile />} /> */}
                         {/* Add other routes here */}
-                    </Switch>
+                    </Routes>
                 </main>
-                <Footer />
-            </div>
+                {/* <Footer /> */}
+            
         </Router>
+      </div>
     );
 };
 
