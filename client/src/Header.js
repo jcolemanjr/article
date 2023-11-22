@@ -9,6 +9,7 @@ function Header() {
                 <ul>
                     <li><Link to="/">Home</Link></li>
                     <li><Link to="/BillList">Bill List</Link></li>
+                    <li><Link to="/create-bill">Create Bill</Link></li>
                     {/* Add more navigation links as needed */}
                 </ul>
             </nav>
