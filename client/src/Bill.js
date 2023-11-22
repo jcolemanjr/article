@@ -1,9 +1,17 @@
-import React from "react";
+import React, {useEffect, useState} from "react";
+import { useNavigate } from 'react-router-dom';
 
-function Bill({onClick, title}) {
+
+
+function Bill({onClick, title, id}) {
+    const navigate = useNavigate();
+    
+    const handleBillClick = (billId) => {
+    navigate(`/bills/${billId}`);
+    };
     return (
         <div className="artwork">
-          <h2>{title}</h2>
+          <h2 onClick={() => handleBillClick(id)} style={{ cursor: 'pointer' }}>{title}</h2>
           {/* <img
             onClick={() => {
               console.log("Works")
