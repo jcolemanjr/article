@@ -55,7 +55,7 @@ class Bill(db.Model, SerializerMixin):
     uploaded_by = db.Column(db.String, db.ForeignKey('users.id'), nullable=False)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    summary = db.relationship('Summary', backref=db.backref('bill', uselist=False))
+    summary = db.relationship('Summary', backref=db.backref('bill', lazy=True))
     votes = db.relationship('Vote', backref='bill', lazy=True)
 
     serialize_rules = ('-votes.bill', '-summary.bill')

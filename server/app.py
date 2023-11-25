@@ -9,11 +9,15 @@ from models import db, User, Bill, Summary, Vote
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 from config import app, db
+from flask_cors import CORS
 import jwt
 import datetime
 import requests
 
 # app = Flask(__name__)
+CORS(app)
+# CORS(app, resources={r"/*": {"origins": "*"}})
+# , resources={r"/api/*": {"origins": "*"}}
 
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///yourdatabase.db'
 # app.config['SECRET_KEY'] = 'your_secret_key'
@@ -23,8 +27,10 @@ import requests
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        token = request.args.get('token')
-
+        # token = request.args.get('token')
+        token = request.headers["Authorization"].replace("Bearer ", "")
+        # for key in request.args:
+        print(token)
         if not token:
             return jsonify({'message': 'Token is missing!'}), 403
         
@@ -87,7 +93,8 @@ def login_user():
     
     if check_password_hash(user.password, auth.password):
         token = jwt.encode({'id': user.id, 'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=30)}, app.config['SECRET_KEY'])
-        return jsonify({'token': token.decode('UTF-8')})
+        return jsonify({'token': token})
+        # .decode('UTF-8')
     
     return make_response('Could not verify', 401, {'WWW-Authenticate': 'Basic realm="Login required!"'})
 
@@ -128,7 +135,7 @@ def list_bills():
             'content': bill.content
             }
         bill_data.append(bill_dict)
-        print(bill_dict)
+        # print(bill_dict)
 
     # [{'id': bill.id, 'title': bill.title, 'summary': bill.summary, 'content': bill.content} for bill in bills]
     return jsonify({'bills': bill_data})
@@ -136,21 +143,36 @@ def list_bills():
 @app.route('/bill', methods=['POST'])
 @token_required
 def create_bill(current_user):
+    print(current_user)
     data = request.get_json()
-    new_bill = Bill(title=data['title'], content=data['content'], uploaded_by=current_user.id)
+    new_bill = Bill(title=data['title'], content=data['content'], uploaded_by=current_user.id) 
     #call OpenAI summary
+    
     db.session.add(new_bill)
     db.session.commit()
-    return jsonify({'message': 'New bill created!'})
+    bill = {'title': new_bill.title, 'id': new_bill.id}
+    # print(new_bill.to_dict())
+    # return jsonify({'message': 'New bill created!'})
+    return bill
+    # return make_response(new_bill.to_dict())
 
 @app.route('/bill/<int:bill_id>', methods=['GET'])
 def get_bill(bill_id):
     bill = Bill.query.filter_by(id=bill_id).first()
 
     if not bill:
-        return jsonify({'message': 'No bill found!'})
+        return jsonify({'message': 'No bill found!'}), 404
     
-    bill_data = {'title': bill.title, 'summary': bill.summary, 'content': bill.content, 'uploaded_by': bill.uploaded_by.username}
+    vote_counts = bill.vote_count()
+    summary_content = bill.summary[0].content if bill.summary else None
+    
+    bill_data = {
+        'title': bill.title,
+        'summary': summary_content,
+        'content': bill.content,
+        'uploaded_by': bill.uploader.username,
+        'vote_count': vote_counts
+        }
     return jsonify({'bill': bill_data})
 
 @app.route('/bill/<int:bill_id>', methods=['PATCH'])

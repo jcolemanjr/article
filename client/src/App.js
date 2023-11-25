@@ -6,6 +6,7 @@ import Header from './Header';
 import LoginForm from './LoginForm';
 import BillDetail from './BillDetail';
 import CreateBill from './CreateBill';
+import EditBill from './EditBill';
 
 // import Footer from './components/Footer';
 
@@ -68,6 +69,7 @@ function App() {
                         {/* <Route path="/register" element={<Register />} /> */}
                         <Route exact path="/BillList" element={<BillList bills={bills} />}/>
                         <Route path="/bills/:billId" element={<BillDetail />} />
+                        <Route path="/edit-bill/:billId" element={<EditBill />} />
                         {/* <Route path="/bill/:id" element={<BillDetail />} /> */}
                         {/* <Route path="/user/:id" element={<UserProfile />} />  */}
                         <Route path="/create-bill" element={<CreateBill setBills={setBills}/>} />
