@@ -143,7 +143,7 @@ def list_bills():
 @app.route('/bill', methods=['POST'])
 @token_required
 def create_bill(current_user):
-    print(current_user)
+    # print(current_user)
     data = request.get_json()
     new_bill = Bill(title=data['title'], content=data['content'], uploaded_by=current_user.id) 
     #call OpenAI summary
@@ -178,8 +178,9 @@ def get_bill(bill_id):
 @app.route('/bill/<int:bill_id>', methods=['PATCH'])
 @token_required
 def update_bill(current_user, bill_id):
+    print(current_user)
     bill = Bill.query.get_or_404(bill_id)
-    if bill.uploaded_by != current_user.id:
+    if int(bill.uploaded_by) != current_user.id:
         return jsonify({'message': 'Permission denied'}), 403
     
     data = request.get_json()
@@ -192,7 +193,7 @@ def update_bill(current_user, bill_id):
 @token_required
 def delete_bill(current_user, bill_id):
     bill = Bill.query.get_or_404(bill_id)
-    if bill.uploaded_by != current_user.id:
+    if int(bill.uploaded_by) != current_user.id:
         return jsonify({'message': 'Permission denied'}), 403
         
     db.session.delete(bill)
@@ -222,7 +223,7 @@ def vote_on_bill(current_user):
 
     new_vote = Vote(user_id=final_delegate.id, bill_id=bill_id, vote_type=vote_type)
 
-    db.session.add()
+    db.session.add(new_vote)
     db.session.commit()
 
     return jsonify({'message': 'Vote cast!'})
