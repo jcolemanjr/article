@@ -92,7 +92,7 @@ def login_user():
         return make_response('Could not verify', 401, {'WWW-Authenticate': 'Basic realm="Login required!"'})
     
     if check_password_hash(user.password, auth.password):
-        token = jwt.encode({'id': user.id, 'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=30)}, app.config['SECRET_KEY'])
+        token = jwt.encode({'id': user.id, 'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=180)}, app.config['SECRET_KEY'])
         return jsonify({'token': token})
         # .decode('UTF-8')
     
@@ -140,21 +140,47 @@ def list_bills():
     # [{'id': bill.id, 'title': bill.title, 'summary': bill.summary, 'content': bill.content} for bill in bills]
     return jsonify({'bills': bill_data})
 
+# @app.route('/bill', methods=['POST'])
+# @token_required
+# def create_bill(current_user):
+#     # print(current_user)
+#     data = request.get_json()
+#     new_bill = Bill(title=data['title'], content=data['content'], uploaded_by=current_user.id) 
+#     #call OpenAI summary
+    
+#     db.session.add(new_bill)
+#     db.session.commit()
+#     bill = {'title': new_bill.title, 'id': new_bill.id}
+#     # print(new_bill.to_dict())
+#     # return jsonify({'message': 'New bill created!'})
+#     return bill
+#     # return make_response(new_bill.to_dict())
+
 @app.route('/bill', methods=['POST'])
 @token_required
 def create_bill(current_user):
-    # print(current_user)
-    data = request.get_json()
-    new_bill = Bill(title=data['title'], content=data['content'], uploaded_by=current_user.id) 
-    #call OpenAI summary
-    
-    db.session.add(new_bill)
-    db.session.commit()
-    bill = {'title': new_bill.title, 'id': new_bill.id}
-    # print(new_bill.to_dict())
-    # return jsonify({'message': 'New bill created!'})
-    return bill
-    # return make_response(new_bill.to_dict())
+    try:
+        data = request.get_json()
+
+        # Validation
+        title = data.get('title')
+        content = data.get('content')
+        if not title or not title.strip():
+            raise ValueError('Title is required and cannot be empty')
+        if not content or not content.strip():
+            raise ValueError('Content is required and cannot be empty')
+
+        new_bill = Bill(title=title, content=content, uploaded_by=current_user.id)
+        db.session.add(new_bill)
+        db.session.commit()
+
+        return jsonify({'title': new_bill.title, 'id': new_bill.id}), 201
+
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    except Exception as e:
+        return jsonify({'error': 'An unexpected error occurred'}), 500
+
 
 @app.route('/bill/<int:bill_id>', methods=['GET'])
 def get_bill(bill_id):
@@ -175,19 +201,51 @@ def get_bill(bill_id):
         }
     return jsonify({'bill': bill_data})
 
+# @app.route('/bill/<int:bill_id>', methods=['PATCH'])
+# @token_required
+# def update_bill(current_user, bill_id):
+#     print(current_user)
+#     bill = Bill.query.get_or_404(bill_id)
+#     if int(bill.uploaded_by) != current_user.id:
+#         return jsonify({'message': 'Permission denied'}), 403
+    
+#     data = request.get_json()
+#     bill.title = data.get('title', bill.title)
+#     bill.content = data.get('content', bill.content)
+#     db.session.commit()
+#     return jsonify({'message': 'Bill updated successfully!'})
+
 @app.route('/bill/<int:bill_id>', methods=['PATCH'])
 @token_required
 def update_bill(current_user, bill_id):
-    print(current_user)
-    bill = Bill.query.get_or_404(bill_id)
-    if int(bill.uploaded_by) != current_user.id:
-        return jsonify({'message': 'Permission denied'}), 403
-    
-    data = request.get_json()
-    bill.title = data.get('title', bill.title)
-    bill.content = data.get('content', bill.content)
-    db.session.commit()
-    return jsonify({'message': 'Bill updated successfully!'})
+    try:
+        bill = Bill.query.get_or_404(bill_id)
+
+        if int(bill.uploaded_by) != current_user.id:
+            return jsonify({'error': 'Permission denied'}), 403
+
+        data = request.get_json()
+
+        # Validation
+        title = data.get('title')
+        content = data.get('content')
+        if title is not None and not title.strip():
+            raise ValueError('Title cannot be empty')
+        if content is not None and not content.strip():
+            raise ValueError('Content cannot be empty')
+
+        bill.title = title if title is not None else bill.title
+        bill.content = content if content is not None else bill.content
+
+        db.session.commit()
+
+        return jsonify({'message': 'Bill updated successfully!'}), 200
+
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    except Exception as e:
+        return jsonify({'error': 'An unexpected error occurred'}), 500
+
 
 @app.route('/bill/<int:bill_id>', methods=['DELETE'])
 @token_required
