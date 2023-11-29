@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
+
+import { ThemeProvider, ThemeContext } from './ThemeContext';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import BillList from './BillList';
 import Home from './Home';
@@ -19,7 +21,7 @@ import EditBill from './EditBill';
 // import EditProfile from './EditProfile';
 
 function App() {
-  console.log("Hello")
+  // const { theme } = useContext(ThemeContext)
   const [bills,setBills]=useState([])
   const [user,setUser]=useState(null)
   
@@ -58,7 +60,9 @@ function App() {
 
 
     return (
+      <ThemeProvider>
       <div className="App">
+      
         {!user ? <LoginForm onLogin={handleLogin} /> : <div>Welcome {user.username}</div>}
         <Router>
                 <Header />
@@ -81,6 +85,7 @@ function App() {
             
         </Router>
       </div>
+      </ThemeProvider>
     );
 };
 

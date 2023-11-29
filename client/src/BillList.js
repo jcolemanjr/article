@@ -1,8 +1,9 @@
-import React,{useState} from "react";
+import React,{useState, useContext} from "react";
+import { ThemeContext } from './ThemeContext';
 import Bill from "./Bill";
 
 function BillList({bills}) {
-
+    const {theme} = useContext(ThemeContext)
     const mappedBills = bills.map((bill) => {
 
         return (
@@ -15,7 +16,7 @@ function BillList({bills}) {
     })
 
     return (
-        <div>
+        <div className={`${theme}-theme`}>
           <h1 className="BillList">Bills</h1>
           {/* <Search setFilteredBills={setFilteredBills} /> */}
           <div className="mappedbill">{mappedBills}</div>
