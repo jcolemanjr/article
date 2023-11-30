@@ -3,8 +3,8 @@ import React from 'react';
 function Home() {
   return (
     <div>
-      <h1>Welcome to Our Application</h1>
-      <p>This is the home page. Navigate through the app using the menu.</p>
+      <h1>Welcome to ArtIcle</h1>
+      <p>This is an experiment in direct democracy. Navigate through the app using the menu.</p>
     </div>
   );
 }
