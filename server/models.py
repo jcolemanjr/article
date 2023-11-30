@@ -1,5 +1,6 @@
 from sqlalchemy.orm import relationship
 from sqlalchemy_serializer import SerializerMixin
+from sqlalchemy.orm import validates
 from datetime import datetime
 from config import db, bcrypt
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -69,6 +70,12 @@ class Bill(db.Model, SerializerMixin):
         return{'Yes': len([vote for vote in votes if vote.vote_type == 'Yes']),
                'No': len([vote for vote in votes if vote.vote_type == 'No']),
                'Abstain': len([vote for vote in votes if vote.vote_type == 'Abstain'])}
+    
+    @validates('title', 'content')
+    def validate_length(self, key, value):
+        if not value or len(value.strip()) == 0:
+            raise ValueError(f"{key.capitalize()} must be greater than 0 characters")
+        return value
 
 class Summary(db.Model, SerializerMixin):
     __tablename__ = 'summaries'

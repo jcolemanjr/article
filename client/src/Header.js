@@ -1,17 +1,22 @@
-import React from 'react';
+import React, {useContext} from 'react';
+
+import { ThemeContext } from './ThemeContext';
 import { Link } from 'react-router-dom'; // Import Link from react-router-dom
 
 function Header() {
+    const { toggleTheme } = useContext(ThemeContext);
+
     return (
         <header className="App-header">
-            <h1>Your App Name</h1>
+            <h1>ArtIcle</h1>
             <nav>
-                <ul>
-                    <li><Link to="/">Home</Link></li>
-                    <li><Link to="/BillList">Bill List</Link></li>
-                    <li><Link to="/create-bill">Create Bill</Link></li>
+                <div>
+                    <Link to="/">Home</Link>
+                    <Link to="/BillList">Bill List</Link>
+                    <Link to="/create-bill">Create Bill</Link>
+                    <button onClick={toggleTheme}>Toggle Theme</button>
                     {/* Add more navigation links as needed */}
-                </ul>
+                </div>
             </nav>
         </header>
     );

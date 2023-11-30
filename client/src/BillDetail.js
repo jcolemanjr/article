@@ -1,8 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
+import { ThemeContext } from './ThemeContext';
 import { useParams } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 
 function BillDetail() {
+    const {theme} = useContext(ThemeContext)
+    const { user } = useContext(ThemeContext);
     const { billId } = useParams();
     const navigate = useNavigate();
     const [bill, setBill] = useState(null);
@@ -69,9 +72,9 @@ function BillDetail() {
       return <div>Loading...</div>;
   }
 
-
+  // className={`${theme}-theme`}
   return (
-    <div>
+    <div className={`${theme}-theme`}>
       <h2>{bill.title}</h2>
       <p>Created by: {bill.uploaded_by}</p>
       <p>Summary: {bill.summary}</p>
